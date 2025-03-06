@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management Portal</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            padding: 2rem;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background-color: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        .add-employee-btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .add-employee-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--card);
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 1rem;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .success-message {
+            display: none;
+            background-color: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: fadeOut 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                display: none;
+            }
+        }
+
+        form {
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .submit-btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .employee-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .employee-table th, .employee-table td {
+            border: 1px solid var(--border);
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: white;
+            border: none;
+        }
+
+        .edit-btn {
+            background-color: var(--primary);
+        }
+
+        .delete-btn {
+            background-color: var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Staff Management Portal</h1>
+            <button class="add-employee-btn" onclick="openModal()">Add Employee</button>
+        </div>
+
+        <div id="successMessage" class="success-message">Employee added successfully!</div>
+
+        <table class="employee-table">
+            <thead>
+                <tr>
+
+                    <th>Employee Name</th>
+                    <th>Employee ID</th>
+                    <th>Company Mail</th>
+                    <th>Role</th>
+                    <th>Joining Date</th>
+                    <th>Training Status</th>
+                    <th>Project Status</th>
+                    <th>Actions</th>
+
+                </tr>
+            </thead>
+            <tbody id="employeeTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add Employee</h2>
+            <form id="employeeForm">
+                <div class="form-group">
+                    <label for="name">Employee Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="empId">Employee ID</label>
+                    <input type="text" id="empId" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Company Mail ID </label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <input type="text" id="role" required>
+                </div>
+                <div class="form-group">
+                    <label for="joiningDate">Joining Date</label>
+                    <input type="date" id="joiningDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="training">Training</label>
+                    <select id="training" required>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="projectStatus">Project Status</label>
+                    <select id="projectStatus">
+                        <option value="On Bench">On Bench</option>
+                        <option value="In Project">In Project</option>
+                    </select>
+                </div>
+                <div class="form-group" id="projectNameGroup" style="display: none;">
+                    <label for="projectName">Project Name</label>
+                    <input type="text" id="projectName">
+                </div>
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const employees = [];
+        const modal = document.getElementById('employeeModal');
+        const successMessage = document.getElementById('successMessage');
+        const form = document.getElementById('employeeForm');
+        const employeeTableBody = document.getElementById('employeeTableBody');
+        const projectNameGroup = document.getElementById('projectNameGroup');
+        const projectStatus = document.getElementById('projectStatus');
+
+        projectStatus.addEventListener('change', function () {
+            projectNameGroup.style.display = this.value === 'In Project' ? 'block' : 'none';
+        });
+
+        function openModal() {
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+            form.reset();
+            projectNameGroup.style.display = 'none';
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const employee = {
+                name: form.name.value,
+                id: form.empId.value,
+                email: form.email.value,
+                role: form.role.value,
+                joiningDate: form.joiningDate.value,
+                training: form.training.value,
+                projectStatus: form.projectStatus.value,
+                projectName: form.projectName.value || 'N/A',
+            };
+
+            employees.push(employee);
+            updateTable();
+            showSuccessMessage();
+            closeModal();
+        });
+
+        function updateTable() {
+            employeeTableBody.innerHTML = employees
+                .map((employee, index) => `
+                    <tr>
+                        <td>${employee.name}</td>
+                        <td>${employee.id}</td>
+                        <td>${employee.email}</td>
+                        <td>${employee.role}</td>
+                        <td>${employee.joiningDate}</td>
+                        <td>${employee.training}</td>
+                        <td>${employee.projectStatus}${employee.projectStatus === 'In Project' ? ` - ${employee.projectName}` : ''}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="editEmployee(${index})">Edit</button>
+                                <button class="delete-btn" onclick="deleteEmployee(${index})">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+        function showSuccessMessage() {
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function editEmployee(index) {
+            const employee = employees[index];
+            form.name.value = employee.name;
+            form.empId.value = employee.id;
+            form.email.value = employee.email;
+            form.role.value = employee.role;
+            form.joiningDate.value = employee.joiningDate;
+            form.training.value = employee.training;
+            form.projectStatus.value = employee.projectStatus;
+            if (employee.projectStatus === 'In Project') {
+                form.projectName.value = employee.projectName;
+                projectNameGroup.style.display = 'block';
+            } else {
+                form.projectName.value = '';
+                projectNameGroup.style.display = 'none';
+            }
+            employees.splice(index, 1);
+            openModal();
+        }
+
+        function deleteEmployee(index) {
+            employees.splice(index, 1);
+            updateTable();
+        }
+    </script>
+</body>
+</html>
